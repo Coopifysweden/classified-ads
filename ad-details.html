@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annons Detaljer</title>
+</head>
+<body>
+    <h1>Annons Detaljer</h1>
+
+    <div id="ad-details"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="supabase.js"></script>
+    <script>
+        // Hämta annonsens ID från URL-parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const adId = urlParams.get('id');
+
+        // Funktion för att hämta detaljer om en annons
+        async function displayAdDetails() {
+            const { data: ad, error } = await supabase
+                .from('ads')
+                .select('*')
+                .eq('id', adId)
+                .single();  // Hämta en enda annons
+
+            if (error || !ad) {
+                document.getElementById('ad-details').innerHTML = 'Kunde inte hitta annonsen.';
+                return;
+            }
+
+            const adDetailsHtml = `
+                <h2>${ad.title}</h2>
+                <img src="${ad.image_url}" alt="${ad.title}" width="300">
+                <p><strong>Beskrivning:</strong> ${ad.description}</p>
+                <p><strong>Pris:</strong> $${ad.price}</p>
+            `;
+
+            document.getElementById('ad-details').innerHTML = adDetailsHtml;
+        }
+
+        // Kör funktionen när sidan laddas
+        displayAdDetails();
+    </script>
+</body>
+</html>
