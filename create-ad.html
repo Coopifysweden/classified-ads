@@ -1,53 +1,74 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Skapa annons</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skapa Annons</title>
 </head>
 <body>
-    <h1>Skapa en ny annons</h1>
-    <form id="adForm">
-        <input type="text" id="title" placeholder="Titel" required>
-        <textarea id="description" placeholder="Beskrivning" required></textarea>
-        <input type="number" id="price" placeholder="Pris" required>
-        <input type="text" id="category" placeholder="Kategori" required>
-        <input type="text" id="location" placeholder="Plats" required>
-        <input type="email" id="contactEmail" placeholder="E-post" required>
-        <input type="tel" id="phoneNumber" placeholder="Telefonnummer">
-        <button type="submit">Lägg upp annons</button>
+    <h1>Skapa Annons</h1>
+
+    <form id="ad-form">
+        <label for="title">Titel:</label>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="description">Beskrivning:</label>
+        <textarea id="description" name="description" required></textarea><br><br>
+
+        <label for="price">Pris:</label>
+        <input type="number" id="price" name="price" required><br><br>
+
+        <label for="image">Bild:</label>
+        <input type="file" id="image" name="image" accept="image/*" required><br><br>
+
+        <button type="submit">Skicka Annons</button>
     </form>
 
-    <script type="module">
-        import { supabase } from './supabase.js';
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Supabase config
+        const SUPABASE_URL = 'https://uqycbzxfzvmkdogrgnpk.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        document.getElementById('adForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        document.getElementById('ad-form').addEventListener('submit', async (e) => {
+            e.preventDefault();  // Stop form from submitting normally
 
+            // Hämta formulärdata
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const price = document.getElementById('price').value;
-            const category = document.getElementById('category').value;
-            const location = document.getElementById('location').value;
-            const contactEmail = document.getElementById('contactEmail').value;
-            const phoneNumber = document.getElementById('phoneNumber').value;
+            const imageFile = document.getElementById('image').files[0];  // Hämta den valda bilden
 
-            const { data, error } = await supabase.from('ads').insert([{
-                title,
-                description,
-                price,
-                category,
-                location,
-                contact_email: contactEmail,
-                phone_number: phoneNumber,
-                is_active: true,
-                views: 0
-            }]);
+            if (!imageFile) {
+                alert("Vänligen välj en bild.");
+                return;
+            }
+
+            // Ladda upp bilden till Supabase storage
+            const { data: uploadedImage, error: uploadError } = await supabase.storage
+                .from('ads-images')  // Skapa en "ads-images"-bucket i Supabase Storage
+                .upload(`public/${imageFile.name}`, imageFile);
+
+            if (uploadError) {
+                alert("Fel vid uppladdning av bild: " + uploadError.message);
+                return;
+            }
+
+            // Få URL till den uppladdade bilden
+            const imageUrl = `${SUPABASE_URL}/storage/v1/object/public/ads-images/${uploadedImage.path}`;
+
+            // Lägga till annonsens data i Supabase
+            const { error } = await supabase
+                .from('ads')
+                .insert([
+                    { title, description, price, image_url: imageUrl }
+                ]);
 
             if (error) {
-                alert('Kunde inte skapa annons: ' + error.message);
+                alert("Fel vid inlämning av annons: " + error.message);
             } else {
-                alert('Annons skapad!');
-                document.getElementById('adForm').reset();
+                alert("Annons skapad!");
             }
         });
     </script>
