@@ -1,49 +1,46 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Visa annonser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alla Annonser</title>
 </head>
 <body>
-    <h1>Annonser</h1>
-    <div id="adsContainer"></div>
+    <h1>Alla Annonser</h1>
 
-    <script type="module">
-        import { supabase } from './supabase.js';
+    <div id="ads"></div>
 
-        async function fetchAds() {
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="supabase.js"></script>
+    <script>
+        // Funktion för att hämta och visa annonser
+        async function displayAds() {
             const { data: ads, error } = await supabase
                 .from('ads')
-                .select('*')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false });
+                .select('*');
 
             if (error) {
-                console.error('Kunde inte hämta annonser:', error);
+                document.getElementById('ads').innerHTML = 'Kunde inte hämta annonser.';
                 return;
             }
 
-            const adsContainer = document.getElementById('adsContainer');
-            adsContainer.innerHTML = '';
-
+            let adsHtml = '';
             ads.forEach(ad => {
-                const adElement = document.createElement('div');
-                adElement.innerHTML = `
-                    <h2>${ad.title}</h2>
-                    <p>${ad.description}</p>
-                    <p>Pris: ${ad.price}</p>
-                    <p>Kategori: ${ad.category}</p>
-                    <p>Plats: ${ad.location}</p>
-                    <p>Kontakt: ${ad.contact_email}</p>
-                    <p>Telefon: ${ad.phone_number}</p>
-                    <p>Visningar: ${ad.views}</p>
-                    <hr>
+                adsHtml += `
+                    <div class="ad">
+                        <a href="ad-details.html?id=${ad.id}">
+                            <img src="${ad.image_url}" alt="${ad.title}" width="200">
+                            <h3>${ad.title}</h3>
+                        </a>
+                    </div>
                 `;
-                adsContainer.appendChild(adElement);
             });
+
+            document.getElementById('ads').innerHTML = adsHtml;
         }
 
-        fetchAds();
+        // Kör funktionen när sidan laddas
+        displayAds();
     </script>
 </body>
 </html>
