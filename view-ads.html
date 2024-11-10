@@ -13,7 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="supabase.js"></script>
     <script>
-        // Funktion för att hämta och visa annonser
         async function displayAds() {
             const { data: ads, error } = await supabase
                 .from('ads')
@@ -39,7 +38,6 @@
             document.getElementById('ads').innerHTML = adsHtml;
         }
 
-        // Kör funktionen när sidan laddas
         displayAds();
     </script>
 </body>
