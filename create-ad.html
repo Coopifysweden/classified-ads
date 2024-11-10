@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <title>Skapa annons</title>
+</head>
+<body>
+    <h1>Skapa en ny annons</h1>
+    <form id="adForm">
+        <input type="text" id="title" placeholder="Titel" required>
+        <textarea id="description" placeholder="Beskrivning" required></textarea>
+        <input type="number" id="price" placeholder="Pris" required>
+        <input type="text" id="category" placeholder="Kategori" required>
+        <input type="text" id="location" placeholder="Plats" required>
+        <input type="email" id="contactEmail" placeholder="E-post" required>
+        <input type="tel" id="phoneNumber" placeholder="Telefonnummer">
+        <button type="submit">Lägg upp annons</button>
+    </form>
+
+    <script type="module">
+        import { supabase } from './supabase.js';
+
+        document.getElementById('adForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const price = document.getElementById('price').value;
+            const category = document.getElementById('category').value;
+            const location = document.getElementById('location').value;
+            const contactEmail = document.getElementById('contactEmail').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+
+            const { data, error } = await supabase.from('ads').insert([{
+                title,
+                description,
+                price,
+                category,
+                location,
+                contact_email: contactEmail,
+                phone_number: phoneNumber,
+                is_active: true,
+                views: 0
+            }]);
+
+            if (error) {
+                alert('Kunde inte skapa annons: ' + error.message);
+            } else {
+                alert('Annons skapad!');
+                document.getElementById('adForm').reset();
+            }
+        });
+    </script>
+</body>
+</html>
